@@ -1,0 +1,4 @@
+baseURL = 'https://mariusandrian.github.io/blog/'
+languageCode = 'en-us'
+title = 'marius dev log'
+theme = 'PaperMod'
