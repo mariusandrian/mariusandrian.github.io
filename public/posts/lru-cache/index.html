@@ -5,9 +5,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Hello there! | marius dev log</title>
+<title>LRU Cache | marius dev log</title>
 <meta name="keywords" content="">
-<meta name="description" content="Design
+<meta name="description" content="While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.
+Design
 We first create the underlying data structures for the LRU cache.
 The requirements for the cache:
 
@@ -18,7 +19,7 @@ Memory should have a fixed size.
 Since we are going to use key to associate to a value, we opted to use std::unordered_map to ensure an average of O(1) lookup.
 The key could be of any hashable type, and the value is the iterator to the std::list.">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/blog/posts/my-first-post/">
+<link rel="canonical" href="http://localhost:1313/blog/posts/lru-cache/">
 <link crossorigin="anonymous" href="/blog/assets/css/stylesheet.da3211e5ef867bf2b75fd5a6515cfed7195c011e8ab735694e203810a827097b.css" integrity="sha256-2jIR5e&#43;Ge/K3X9WmUVz&#43;1xlcAR6KtzVpTiA4EKgnCXs=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/blog/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/blog/favicon-16x16.png">
@@ -27,7 +28,7 @@ The key could be of any hashable type, and the value is the iterator to the std:
 <link rel="mask-icon" href="http://localhost:1313/blog/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/blog/posts/my-first-post/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/blog/posts/lru-cache/">
 <noscript>
     <style>
         #theme-toggle,
@@ -56,7 +57,7 @@ The key could be of any hashable type, and the value is the iterator to the std:
   <header class="post-header">
     <div class="breadcrumbs"><a href="http://localhost:1313/blog/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/blog/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
-      Hello there!
+      LRU Cache
       <span class="entry-hint" title="Draft">
         <svg xmlns="http://www.w3.org/2000/svg" height="35" viewBox="0 -960 960 960" fill="currentColor">
           <path
@@ -68,7 +69,8 @@ The key could be of any hashable type, and the value is the iterator to the std:
 
 </div>
   </header> 
-  <div class="post-content"><h2 id="design">Design<a hidden class="anchor" aria-hidden="true" href="#design">#</a></h2>
+  <div class="post-content"><p>While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.</p>
+<h2 id="design">Design<a hidden class="anchor" aria-hidden="true" href="#design">#</a></h2>
 <p>We first create the underlying data structures for the LRU cache.
 The requirements for the cache:</p>
 <ul>
@@ -83,16 +85,16 @@ This consequently allows us to promote a value in O(1). The list&rsquo;s size ca
 <p>Other alternatives considered:</p>
 <ul>
 <li>
-<p>std::forward_list</p>
+<p><code>std::forward_list</code></p>
 <p>Why do we need a bidirectional pointer? Maybe we can simply use a singly linked list.
 In forward_list, it is true that we will save some memory from only holding the next pointer. However, the class doesn&rsquo;t have any <code>pop_back</code> in its API. While it is technically possible to manage the last and the 2nd last iterator to enable a <code>pop_back</code> behavior, this is extra work that can be avoided.</p>
 </li>
 <li>
-<p>std::vector</p>
+<p><code>std::vector</code></p>
 <p>This would not work because promoting a value to the top of the list would require O(N) to push everything else down.</p>
 </li>
 <li>
-<p>std::deque</p>
+<p><code>std::deque</code></p>
 <p>Deque does have <code>push_front</code> and <code>pop_back</code> which are guaranteed O(1).
 However, deque suffers from O(N) when promoting a value to the top of the list. This is due to its nature of being a sequence of contiguous arrays.
 Removing a value necessitates scooting elements after it forwards - similar problems to a std::vector.</p>
@@ -100,7 +102,7 @@ Removing a value necessitates scooting elements after it forwards - similar prob
 This would prevent us from using our map to access values directly and quickly.</p>
 </li>
 </ul>
-<h3 id="listnode">ListNode<a hidden class="anchor" aria-hidden="true" href="#listnode">#</a></h3>
+<h3 id="listnode-struct">ListNode struct<a hidden class="anchor" aria-hidden="true" href="#listnode-struct">#</a></h3>
 <p>Originally, the list only contains the data of type T. However, this posed a problem when evicting the last element in a list.
 When we evict, we also need to remove said element from the map lest we have an ever-growing map.
 However, the list only holds the data T, but not the key. We need to include the key inside the list node itself to properly remove the key from the map as well.
@@ -108,16 +110,20 @@ This does create a duplicate key, however at this point the memory overhead is l
 <h2 id="algorithm">Algorithm<a hidden class="anchor" aria-hidden="true" href="#algorithm">#</a></h2>
 <ol>
 <li>
-<p>Inserting values
-We first check whether the cache is full or not. If it is, we evict the last recently used element and remove that element from our map.</p>
+<p><strong>Inserting values</strong></p>
+<p>We first check whether the cache is full or not. If it is, we evict the last recently used element and remove that element from our map.</p>
 <p>We then put the new element at the front of our list. We update the map with the new key and its iterator which is at the front of the list.</p>
 </li>
 <li>
-<p>Getting values
-We check the existence of the key in the map, and return an empty optional if it&rsquo;s not found.</p>
+<p><strong>Getting values</strong></p>
+<p>We check the existence of the key in the map, and return an empty optional if it&rsquo;s not found.</p>
 <p>If it is found, we promote the element to the top of the list and return the data back to the caller.</p>
 </li>
 </ol>
+<h2 id="source">Source<a hidden class="anchor" aria-hidden="true" href="#source">#</a></h2>
+<p>The source code can be found in this <a href="https://github.com/mariusandrian/cpp-lru-cache">github repo.</a></p>
+<h2 id="future">Future<a hidden class="anchor" aria-hidden="true" href="#future">#</a></h2>
+<p>Next up is to handle multithreading. I hope to add some stress tests and benchmarks to prove its efficiency.</p>
 
 
   </div>

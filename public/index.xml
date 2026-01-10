@@ -6,21 +6,31 @@
     <description>Recent content on marius dev log</description>
     <generator>Hugo -- 0.154.3</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 10 Jan 2026 10:39:03 +1100</lastBuildDate>
+    <lastBuildDate>Sat, 10 Jan 2026 14:04:34 +1100</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Hello there!</title>
-      <link>http://localhost:1313/blog/posts/my-first-post/</link>
+      <title>LRU Cache</title>
+      <link>http://localhost:1313/blog/posts/lru/</link>
+      <pubDate>Sat, 10 Jan 2026 14:04:34 +1100</pubDate>
+      <guid>http://localhost:1313/blog/posts/lru/</guid>
+      <description>&lt;p&gt;While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.&lt;/p&gt;
+&lt;h2 id=&#34;design&#34;&gt;Design&lt;/h2&gt;
+&lt;p&gt;We first create the underlying data structures for the LRU cache.
+The requirements for the cache:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;O(1) retrieval of values anywhere in the cache using a key.&lt;/li&gt;
+&lt;li&gt;O(1) setting of values which include cache eviction.&lt;/li&gt;
+&lt;li&gt;Memory should have a fixed size.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Since we are going to use key to associate to a value, we opted to use std::unordered_map to ensure an average of O(1) lookup.
+The key could be of any hashable type, and the value is the iterator to the std::list.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hello! 👋</title>
+      <link>http://localhost:1313/blog/posts/hello/</link>
       <pubDate>Sat, 10 Jan 2026 10:39:03 +1100</pubDate>
-      <guid>http://localhost:1313/blog/posts/my-first-post/</guid>
-      <description>&lt;p&gt;This is the first post&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;hi!&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\n&amp;#39;&lt;/span&gt;;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+      <guid>http://localhost:1313/blog/posts/hello/</guid>
+      <description>&lt;p&gt;Welcome! This blog is to journal my journey of delving deeper into C++. I&amp;rsquo;m still learning how to write technical blogs, so I&amp;rsquo;m hoping it gets better over time. Have a good day :)&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
