@@ -1,6 +1,6 @@
 baseURL = 'https://mariusandrian.github.io/'
 languageCode = 'en-us'
-title = 'mdl'
+title = "marius' dev log"
 theme = 'PaperMod'
 
 [params]
@@ -9,7 +9,7 @@ disableThemeToggle = true
 ShowBreadCrumbs = true
 
 [params.homeInfoParams]
-Title = "marius' dev log"
+Title = "hello!"
 Content = "My name is Marius, I'm a software engineer in Sydney currently specializing in C++. I have 4+ years experience in backend development in Kotlin and Go. This blog is to document my learnings from C++ and my projects. Feel free to reach out through <a href='mailto:marius.atj@gmail.com' target='_blank'>email</a> or linkedIn!"
 
 [[params.socialIcons]]

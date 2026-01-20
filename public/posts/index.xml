@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Posts on mdl</title>
+    <title>Posts on marius&#39; dev log</title>
     <link>http://localhost:1313/posts/</link>
-    <description>Recent content in Posts on mdl</description>
+    <description>Recent content in Posts on marius&#39; dev log</description>
     <generator>Hugo -- 0.154.3</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 20 Jan 2026 13:15:58 +1100</lastBuildDate>
@@ -13,21 +13,21 @@
       <link>http://localhost:1313/posts/lfu/</link>
       <pubDate>Tue, 20 Jan 2026 13:15:58 +1100</pubDate>
       <guid>http://localhost:1313/posts/lfu/</guid>
-      <description>&lt;p&gt;While reading on LRU Caches, I found about LFU caches and was intrigued to see how I can try to make my own.&lt;/p&gt;
-&lt;h1 id=&#34;design-choices&#34;&gt;Design choices&lt;/h1&gt;
+      <description>&lt;p&gt;Adjacent to LRU, LFU caches behave slightly differently and was intrigued to see how I can try to make my own.&lt;/p&gt;
+&lt;h3 id=&#34;design-choices&#34;&gt;Design choices&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU).&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;get(key)&lt;/code&gt;
 &lt;ul&gt;
-&lt;li&gt;increase frequency, return value.&lt;/li&gt;
+&lt;li&gt;Increase frequency of key-value entry, return value.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;code&gt;put(key, value)&lt;/code&gt;
 &lt;ul&gt;
-&lt;li&gt;increase frequency, update value.&lt;/li&gt;
-&lt;li&gt;if at capacity, evict an entry.&lt;/li&gt;
+&lt;li&gt;Increase frequency, update value.&lt;/li&gt;
+&lt;li&gt;If at capacity, evict an entry.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
