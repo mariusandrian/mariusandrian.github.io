@@ -4,7 +4,7 @@ draft = false
 title = 'LFU Cache'
 +++
 
-While reading on LRU, I found about LFU caches and was intrigued to see how I can try to make my own.
+Adjacent to LRU, LFU caches behave slightly differently and was intrigued to see how I can try to make my own.
 
 ### Design choices
 - Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU). 
