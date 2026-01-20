@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="light">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>LFU Cache | mdl</title>
+<meta name="keywords" content="">
+<meta name="description" content="While reading on LRU, I found about LFU caches and was intrigued to see how I can try to make my own.
+Design choices
+
+
+Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU).
+
+get(key)
+
+Increase frequency of key-value entry, return value.
+
+
+put(key, value)
+
+Increase frequency, update value.
+If at capacity, evict an entry.
+
+
+
+
+
+The difference with LRU is the eviction policy. This time, the entry that is the least frequently accessed/updated is evicted in constant time. If there are multiple entries with the same frequency, use LRU rules to evict.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/lfu/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.da3211e5ef867bf2b75fd5a6515cfed7195c011e8ab735694e203810a827097b.css" integrity="sha256-2jIR5e&#43;Ge/K3X9WmUVz&#43;1xlcAR6KtzVpTiA4EKgnCXs=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/lfu/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="mdl (Alt + H)">mdl</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      LFU Cache
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="35" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+    </h1>
+    <div class="post-meta"><span title='2026-01-20 13:15:58 +1100 AEDT'>January 20, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>While reading on LRU, I found about LFU caches and was intrigued to see how I can try to make my own.</p>
+<h3 id="design-choices">Design choices<a hidden class="anchor" aria-hidden="true" href="#design-choices">#</a></h3>
+<ul>
+<li>
+<p>Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU).</p>
+<ul>
+<li><code>get(key)</code>
+<ul>
+<li>Increase frequency of key-value entry, return value.</li>
+</ul>
+</li>
+<li><code>put(key, value)</code>
+<ul>
+<li>Increase frequency, update value.</li>
+<li>If at capacity, evict an entry.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>The difference with LRU is the eviction policy. This time, the entry that is the least frequently accessed/updated is evicted in constant time. If there are multiple entries with the same frequency, use LRU rules to evict.</p>
+</li>
+<li>
+<p>Based on the previous LRU project, we know that we can use <code>list</code> to accomodate the LRU logic. Since we already had the LRU base, we should try to isolate the LRU logic and find another way to enforce the LFU logic by going to a higher level. Turns out, we could do this by grouping nodes into lists of different frequencies. Let&rsquo;s see how we can make this method work.</p>
+</li>
+</ul>
+<h3 id="multiple-lists">Multiple Lists<a hidden class="anchor" aria-hidden="true" href="#multiple-lists">#</a></h3>
+<p><strong>Get</strong></p>
+<ul>
+<li>When we hear O(1) access based on a key, our first instinct is to grab an <code>unordered_map</code> which does give an average O(1) access. Paired with an iterator to the <code>list</code> node above which allows us to directly access the node, we can ensure a fast access to our node.</li>
+<li>Does increasing the node frequency is also an O(1) operation? Yes!
+<ul>
+<li>Removal from a list is O(1), and since we have the frequency variable in the node, we can easily create/access the list at frequency+1, and add a node at O(1) as well</li>
+</ul>
+</li>
+</ul>
+<p><strong>Put</strong></p>
+<ul>
+<li>O(1) for <code>put</code> is achieved through the same <code>unordered_map</code>.
+<ul>
+<li>If the node exists, we create a new node in a frequency+1 <code>list</code> and delete the old one.</li>
+<li>If the node does not exist:
+<ul>
+<li>And if the cache is at capacity:
+<ul>
+<li>we remove a node at the lowest frequency. We use a <code>min_freq</code> variable to track this. If there is more than one node in the list, we pop the least recently used.</li>
+</ul>
+</li>
+<li>Then we add the new node to the <code>list</code> where frequency == 1.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="why-not-other-data-structures">Why not other data structures?<a hidden class="anchor" aria-hidden="true" href="#why-not-other-data-structures">#</a></h3>
+<ul>
+<li><code>map</code> operations are <code>O(logN)</code>, so they are not considered.</li>
+<li><code>vector</code>, <code>deque</code> and <code>list</code> provide O(1) removal from their front/end, hence they can be considered.</li>
+</ul>
+<h3 id="node">Node<a hidden class="anchor" aria-hidden="true" href="#node">#</a></h3>
+<ul>
+<li>At first, <code>value</code> is the only member attribute in the node. We then add the frequency as a member so that we can know which list to move the node to when its frequency increases. Alternatively, we could put this information in the map eg. <code>unordered_map&lt;T, std::pair&lt;int, list_iterator&gt;&gt;</code>, however we decided to keep it in the node because it is easier to read and reason with.</li>
+<li>We also added key inside the node, which is to enable us to know which entry in the map to delete whenever we <code>pop</code> the least frequently used node. Without this key, we will have no way to update the map.</li>
+</ul>
+<h3 id="implementation">Implementation<a hidden class="anchor" aria-hidden="true" href="#implementation">#</a></h3>
+<p>Source code can be found <a href="https://github.com/mariusandrian/CPP-LFU-Cache">here</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">mdl</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+</body>
+
+</html>

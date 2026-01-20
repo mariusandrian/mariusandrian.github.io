@@ -1,13 +1,40 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>marius dev log</title>
+    <title>mdl</title>
     <link>http://localhost:1313/</link>
-    <description>Recent content on marius dev log</description>
+    <description>Recent content on mdl</description>
     <generator>Hugo -- 0.154.3</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 10 Jan 2026 14:04:34 +1100</lastBuildDate>
+    <lastBuildDate>Tue, 20 Jan 2026 13:15:58 +1100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LFU Cache</title>
+      <link>http://localhost:1313/posts/lfu/</link>
+      <pubDate>Tue, 20 Jan 2026 13:15:58 +1100</pubDate>
+      <guid>http://localhost:1313/posts/lfu/</guid>
+      <description>&lt;p&gt;While reading on LRU, I found about LFU caches and was intrigued to see how I can try to make my own.&lt;/p&gt;
+&lt;h3 id=&#34;design-choices&#34;&gt;Design choices&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;get(key)&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;Increase frequency of key-value entry, return value.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;put(key, value)&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;Increase frequency, update value.&lt;/li&gt;
+&lt;li&gt;If at capacity, evict an entry.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The difference with LRU is the eviction policy. This time, the entry that is the least frequently accessed/updated is evicted in constant time. If there are multiple entries with the same frequency, use LRU rules to evict.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>LRU Cache</title>
       <link>http://localhost:1313/posts/lru/</link>
