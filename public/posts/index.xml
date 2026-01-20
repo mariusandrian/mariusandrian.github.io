@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Posts on marius dev log</title>
-    <link>http://localhost:1313/blog/posts/</link>
+    <link>http://localhost:1313/posts/</link>
     <description>Recent content in Posts on marius dev log</description>
     <generator>Hugo -- 0.154.3</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 10 Jan 2026 14:04:34 +1100</lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>LRU Cache</title>
-      <link>http://localhost:1313/blog/posts/lru/</link>
+      <link>http://localhost:1313/posts/lru/</link>
       <pubDate>Sat, 10 Jan 2026 14:04:34 +1100</pubDate>
-      <guid>http://localhost:1313/blog/posts/lru/</guid>
+      <guid>http://localhost:1313/posts/lru/</guid>
       <description>&lt;p&gt;While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.&lt;/p&gt;
 &lt;h2 id=&#34;design&#34;&gt;Design&lt;/h2&gt;
 &lt;p&gt;We first create the underlying data structures for the LRU cache.
@@ -27,9 +27,9 @@ The key could be of any hashable type, and the value is the iterator to the std:
     </item>
     <item>
       <title>Hello! 👋</title>
-      <link>http://localhost:1313/blog/posts/hello/</link>
+      <link>http://localhost:1313/posts/hello/</link>
       <pubDate>Sat, 10 Jan 2026 10:39:03 +1100</pubDate>
-      <guid>http://localhost:1313/blog/posts/hello/</guid>
+      <guid>http://localhost:1313/posts/hello/</guid>
       <description>&lt;p&gt;Welcome! This blog is to journal my journey of delving deeper into C++. I&amp;rsquo;m still learning how to write technical blogs, so I&amp;rsquo;m hoping it gets better over time. Have a good day :)&lt;/p&gt;</description>
     </item>
   </channel>
