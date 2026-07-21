@@ -4,13 +4,11 @@ title = "marius' dev log"
 theme = 'PaperMod'
 
 [params]
-defaultTheme = "light"
-disableThemeToggle = true
 ShowBreadCrumbs = true
 
 [params.homeInfoParams]
 Title = "hello!"
-Content = "My name is Marius, I'm a software engineer in Sydney with 4+ years backend development experience in Java/Kotlin and Go. This blog is to document things I find intriguing and my side projects. Feel free to reach out through <a href='mailto:marius.atj@gmail.com' target='_blank'>email</a> or linkedIn!"
+Content = "My name is Marius, I'm a software engineer in Sydney with 4+ years backend development experience. This blog is to document technical things I find intriguing and my side projects. Feel free to reach out through <a href='mailto:marius.atj@gmail.com' target='_blank'>email</a> or linkedIn!"
 
 [[params.socialIcons]]
 name = "linkedin"
