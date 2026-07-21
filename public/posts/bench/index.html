@@ -1,312 +1,71 @@
-<!DOCTYPE html>
-<html lang="en" dir="auto" data-theme="auto">
-
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
-<title>How to benchmark with Java Microbenchmark Harness (JMH) | marius&#39; dev log</title>
-<meta name="keywords" content="">
-<meta name="description" content="I have been binging performance-related content lately, and the phrase &ldquo;measure first&rdquo; comes out a lot. A fond memory of mine of &ldquo;measuring&rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.">
-<meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/bench/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.da3211e5ef867bf2b75fd5a6515cfed7195c011e8ab735694e203810a827097b.css" integrity="sha256-2jIR5e&#43;Ge/K3X9WmUVz&#43;1xlcAR6KtzVpTiA4EKgnCXs=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/bench/">
-<noscript>
-    <style>
-        #theme-toggle,
-        .top-link {
-            display: none;
-        }
-
-    </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-        @media (prefers-color-scheme: light) {
-            .list::-webkit-scrollbar-thumb {
-                border-color: var(--code-bg);
-            }
-        }
-
-    </style>
-</noscript>
-<script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
-        document.querySelector("html").dataset.theme = 'light';
-    }
-
-</script>
-</head>
-<body id="top">
-    <header class="header">
-    <nav class="nav">
-        <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="marius&#39; dev log (Alt + H)">marius&#39; dev log</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu">
-        </ul>
-    </nav>
-</header>
-<main class="main">
-
-<article class="post-single">
-  <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
-    <h1 class="post-title entry-hint-parent">
-      How to benchmark with Java Microbenchmark Harness (JMH)
-    </h1>
-    <div class="post-meta"><span title='2026-07-21 13:57:39 +1000 AEST'>July 21, 2026</span>
-
-</div>
-  </header> 
-  <div class="post-content"><p>I have been binging performance-related content lately, and the phrase &ldquo;measure first&rdquo; comes out a lot. A fond memory of mine of &ldquo;measuring&rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.</p>
-<p>The easiest way to measure how fast a function runs is pretty simple. Measure the start, run the function, and measure the end. Substract the difference, and we have the result.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">measure</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> start <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>();
-</span></span><span style="display:flex;"><span>    functionWeWantToMeasure();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> end <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> duration <span style="color:#f92672">=</span> end <span style="color:#f92672">-</span> start;
-</span></span><span style="display:flex;"><span>    System.<span style="color:#a6e22e">out</span>.<span style="color:#a6e22e">println</span>(<span style="color:#e6db74">&#34;Elapsed nanoseconds: &#34;</span> <span style="color:#f92672">+</span> duration);
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>For simple checks between two functions, maybe this would suffice as an intial gauge. Why then, do we see tools like Java Microbenchmark Harness (JMH) being used? It comes down to how reliable the above test is. In the above, we only run the code once, which could prevent the JIT compiler to optimize the code. We are hence quite possibly measuring the interpreted code, not how it would actually perform in a long running process. To address that, we could  write a loop, accumulate the average, and output the result. We could do that, but all of this is already done in JMH. We simply use the annotations given instead of handrolling our own benchmark every time.</p>
-<p>How can we setup the JMH then? Here are the steps to run a JMH benchmark, assuming that we are using Gradle (Kotlin DSL) and Java, which is the stack that I like to use.</p>
-<h2 id="setup">Setup<a hidden class="anchor" aria-hidden="true" href="#setup">#</a></h2>
-<ol>
-<li>
-<p>Add the JMH plugin to <code>build.gradle.kts</code>.</p>
-<p>Refer to <a href="https://github.com/melix/jmh-gradle-plugin">https://github.com/melix/jmh-gradle-plugin</a></p>
-<pre tabindex="0"><code>plugins {
+<!doctype html><html lang=en dir=auto data-theme=auto><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>How to benchmark with Java Microbenchmark Harness (JMH) | marius' dev log</title><meta name=keywords content><meta name=description content="I have been binging performance-related content lately, and the phrase &ldquo;measure first&rdquo; comes out a lot. A fond memory of mine of &ldquo;measuring&rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup."><meta name=author content><link rel=canonical href=https://mariusandrian.github.io/posts/bench/><link crossorigin=anonymous href=/assets/css/stylesheet.6ff46447b1fa3f8a5cc0bcae48088decc3ae37f5fbc99406a3aefc3bf0e6044a.css integrity="sha256-b/RkR7H6P4pcwLyuSAiN7MOuN/X7yZQGo678O/DmBEo=" rel="preload stylesheet" as=style><link rel=icon href=https://mariusandrian.github.io/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://mariusandrian.github.io/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://mariusandrian.github.io/favicon-32x32.png><link rel=apple-touch-icon href=https://mariusandrian.github.io/apple-touch-icon.png><link rel=mask-icon href=https://mariusandrian.github.io/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://mariusandrian.github.io/posts/bench/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51);color-scheme:dark}.list{background:var(--theme)}.toc{background:var(--entry)}}</style></noscript><script>localStorage.getItem("pref-theme")==="dark"?document.querySelector("html").dataset.theme="dark":localStorage.getItem("pref-theme")==="light"?document.querySelector("html").dataset.theme="light":window.matchMedia("(prefers-color-scheme: dark)").matches?document.querySelector("html").dataset.theme="dark":document.querySelector("html").dataset.theme="light"</script><meta property="og:url" content="https://mariusandrian.github.io/posts/bench/"><meta property="og:site_name" content="marius' dev log"><meta property="og:title" content="How to benchmark with Java Microbenchmark Harness (JMH)"><meta property="og:description" content="I have been binging performance-related content lately, and the phrase “measure first” comes out a lot. A fond memory of mine of “measuring” is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2026-07-21T13:57:39+10:00"><meta property="article:modified_time" content="2026-07-21T13:57:39+10:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="How to benchmark with Java Microbenchmark Harness (JMH)"><meta name=twitter:description content="I have been binging performance-related content lately, and the phrase “measure first” comes out a lot. A fond memory of mine of “measuring” is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://mariusandrian.github.io/posts/"},{"@type":"ListItem","position":2,"name":"How to benchmark with Java Microbenchmark Harness (JMH)","item":"https://mariusandrian.github.io/posts/bench/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to benchmark with Java Microbenchmark Harness (JMH)","name":"How to benchmark with Java Microbenchmark Harness (JMH)","description":"I have been binging performance-related content lately, and the phrase \u0026ldquo;measure first\u0026rdquo; comes out a lot. A fond memory of mine of \u0026ldquo;measuring\u0026rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.\n","keywords":[],"articleBody":"I have been binging performance-related content lately, and the phrase “measure first” comes out a lot. A fond memory of mine of “measuring” is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.\nThe easiest way to measure how fast a function runs is pretty simple. Measure the start, run the function, and measure the end. Substract the difference, and we have the result.\npublic void measure() { long start = System.nanoTime(); functionWeWantToMeasure(); long end = System.nanoTime(); long duration = end - start; System.out.println(\"Elapsed nanoseconds: \" + duration); } For simple checks between two functions, maybe this would suffice as an intial gauge. Why then, do we see tools like Java Microbenchmark Harness (JMH) being used? It comes down to how reliable the above test is. In the above, we only run the code once, which could prevent the JIT compiler to optimize the code. We are hence quite possibly measuring the interpreted code, not how it would actually perform in a long running process. To address that, we could write a loop, accumulate the average, and output the result. We could do that, but all of this is already done in JMH. We simply use the annotations given instead of handrolling our own benchmark every time.\nHow can we setup the JMH then? Here are the steps to run a JMH benchmark, assuming that we are using Gradle (Kotlin DSL) and Java, which is the stack that I like to use.\nSetup Add the JMH plugin to build.gradle.kts.\nRefer to https://github.com/melix/jmh-gradle-plugin\nplugins { id(\"me.champeau.jmh\") version \"0.7.3\" } Run ./gradlew build to download the plugin.\nCreate folders src/jmh/java\nThis is the default location where the tool expects to find your benchmarks. Put your benchmarks here.\nWrite the function that you want to test\nI was curious on the effect of autoboxing on performance, and hence I wrote these two functions to try and capture that.\npublic class Sum { public static int withPrimitives(int start, int end) { int result = 0; for (int i = start; i \u003c= end; i++) { result += i; } return result; } public static Integer withAutoBoxing(int start, int end) { Integer result = 0; for (int i = start; i \u003c= end; i++) { result += i; } return result; } } Write your benchmark\nCreate a SumBenchmark.java in /src/jmh/org/example/. The benchmark below sets up the range of numbers that we are summing up, and defining the two functions to test.\npublic class SumBenchmark { private final static int START_NUM = 1; private final static int END_NUM = 10_000; @Benchmark public void sumWithPrimitive(Blackhole bh) { bh.consume(Sum.withPrimitives(START_NUM, END_NUM)); } @Benchmark public void sumWithAutoBoxing(Blackhole bh) { bh.consume(Sum.withAutoBoxing(START_NUM, END_NUM)); } } By default, the JMH will run a throughput test, which tests how many times we can complete the function. Our hypothesis is that the AutoBoxing will have a lower throughput compared to the primitive function.\nbh.consume is a function that uses the result from our function to prevent the compiler from removing our code. This happens when the compiler sees that values are not being used, and we would essentially be measuring nothing.\nRun Let’s run the benchmark with ./gradlew jmh. Note, if you run above, it will take a fairly long time because of JMH’s default settings. You can see the defaults in the terminal after you run JMH:\n# Warmup: 5 iterations, 10 s each # Measurement: 5 iterations, 10 s each # Timeout: 10 min per iteration # Threads: 1 thread, will synchronize iterations # Benchmark mode: Throughput, ops/time # Benchmark: org.example.SumBenchmark.sumWithAutoBoxing If you are impatient and would like to just see a sample result, feel free to modify the configs. You could for example reduce the measurement and warmup time as follows:\n@Measurement(iterations = 5, time = 1) @Warmup(iterations = 5, time = 1) public class SumBenchmark { // the rest of the code. Results We can see from results below that summing using a primitive allows us to process ~3.5x times more than with autoboxing.\nBenchmark Mode Cnt Score Error Units SumBenchmark.sumWithAutoBoxing thrpt 25 81416.429 ± 2077.866 ops/s SumBenchmark.sumWithPrimitive thrpt 25 297518.357 ± 2719.078 ops/s Machine used is Macbook Air M1 2020.\nThis is expected due to the creation of Integer objects on the heap is an additional operation. On top of that, as heap objects continue to accumulate, the garbage collector might run to move objects from the Eden space.\nAnd there you go, not too hard to measure! Well, just to start anyway. There are so many things that would affect our measurements (and what we are actually measuring) such as:\nDead Code Elimination Constant Folding Cache locality We also need to explore other modes such as SampleTime which would give us tail latencies such as p99.\nAs a summary, we managed to setup JMH and run a simple benchmark.\nFunny things I added a test where I did not use a black hole:\n@Benchmark public void sumWithPrimitiveNoBh(Blackhole bh) { int result = Sum.withPrimitives(START_NUM, END_NUM); } SumBenchmark.sumWithPrimitive thrpt 25 297820.138 ± 4679.348 ops/s SumBenchmark.sumWithPrimitiveNoBh thrpt 25 1693983257.141 ± 107050001.440 ops/s sumWithPrimitiveNoBh seems to be working amazingly well. Theory says that we’re measuring nothing, but I’ll need to grab a disassembler to really make sure. That’s for another time :)\n","wordCount":"924","inLanguage":"en","datePublished":"2026-07-21T13:57:39+10:00","dateModified":"2026-07-21T13:57:39+10:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://mariusandrian.github.io/posts/bench/"},"publisher":{"@type":"Organization","name":"marius' dev log","logo":{"@type":"ImageObject","url":"https://mariusandrian.github.io/favicon.ico"}}}</script></head><body id=top><header class=header><nav class=header-nav><div class=logo><a href=https://mariusandrian.github.io/ accesskey=h title="marius' dev log (Alt + H)">marius' dev log</a><div class=logo-switches><button id=theme-toggle class=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
+<svg class="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+<svg class="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu class=menu></ul></nav></header><main class=main><article class=post-single><header class=post-header><nav class=breadcrumbs role=navigation aria-label=Breadcrumb><a href=/>Home</a>
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+<a href=/posts/>Posts</a>
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"/></svg></nav><h1 class="post-title entry-hint-parent">How to benchmark with Java Microbenchmark Harness (JMH)</h1><div class=post-meta><span title='2026-07-21 13:57:39 +1000 AEST'>July 21, 2026</span></div></header><div class="post-content md-content"><p>I have been binging performance-related content lately, and the phrase &ldquo;measure first&rdquo; comes out a lot. A fond memory of mine of &ldquo;measuring&rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.</p><p>The easiest way to measure how fast a function runs is pretty simple. Measure the start, run the function, and measure the end. Substract the difference, and we have the result.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>measure</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>long</span> start <span style=color:#f92672>=</span> System.<span style=color:#a6e22e>nanoTime</span>();
+</span></span><span style=display:flex><span>    functionWeWantToMeasure();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>long</span> end <span style=color:#f92672>=</span> System.<span style=color:#a6e22e>nanoTime</span>();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>long</span> duration <span style=color:#f92672>=</span> end <span style=color:#f92672>-</span> start;
+</span></span><span style=display:flex><span>    System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;Elapsed nanoseconds: &#34;</span> <span style=color:#f92672>+</span> duration);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>For simple checks between two functions, maybe this would suffice as an intial gauge. Why then, do we see tools like Java Microbenchmark Harness (JMH) being used? It comes down to how reliable the above test is. In the above, we only run the code once, which could prevent the JIT compiler to optimize the code. We are hence quite possibly measuring the interpreted code, not how it would actually perform in a long running process. To address that, we could write a loop, accumulate the average, and output the result. We could do that, but all of this is already done in JMH. We simply use the annotations given instead of handrolling our own benchmark every time.</p><p>How can we setup the JMH then? Here are the steps to run a JMH benchmark, assuming that we are using Gradle (Kotlin DSL) and Java, which is the stack that I like to use.</p><h2 id=setup>Setup<a hidden class=anchor aria-hidden=true href=#setup>#</a></h2><ol><li><p>Add the JMH plugin to <code>build.gradle.kts</code>.</p><p>Refer to <a href=https://github.com/melix/jmh-gradle-plugin>https://github.com/melix/jmh-gradle-plugin</a></p><pre tabindex=0><code>plugins {
     id(&#34;me.champeau.jmh&#34;) version &#34;0.7.3&#34;
 }
-</code></pre><p>Run <code>./gradlew build</code> to download the plugin.</p>
-</li>
-<li>
-<p>Create folders <code>src/jmh/java</code></p>
-<p>This is the default location where the tool expects to find your benchmarks. Put your benchmarks here.</p>
-</li>
-<li>
-<p>Write the function that you want to test</p>
-<p>I was curious on the effect of autoboxing on performance, and hence I wrote these two functions to try and capture that.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Sum</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">withPrimitives</span>(<span style="color:#66d9ef">int</span> start, <span style="color:#66d9ef">int</span> end) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> result <span style="color:#f92672">=</span> 0;
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> start; i <span style="color:#f92672">&lt;=</span> end; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            result <span style="color:#f92672">+=</span> i;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> Integer <span style="color:#a6e22e">withAutoBoxing</span>(<span style="color:#66d9ef">int</span> start, <span style="color:#66d9ef">int</span> end) {
-</span></span><span style="display:flex;"><span>        Integer result <span style="color:#f92672">=</span> 0;
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> start; i <span style="color:#f92672">&lt;=</span> end; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            result <span style="color:#f92672">+=</span> i;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div></li>
-<li>
-<p>Write your benchmark</p>
-<p>Create a <code>SumBenchmark.java</code> in <code>/src/jmh/org/example/</code>.
-The benchmark below sets up the range of numbers that we are summing up, and defining the two functions to test.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SumBenchmark</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> START_NUM <span style="color:#f92672">=</span> 1;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> END_NUM <span style="color:#f92672">=</span> 10_000;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Benchmark</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sumWithPrimitive</span>(Blackhole bh) {
-</span></span><span style="display:flex;"><span>        bh.<span style="color:#a6e22e">consume</span>(Sum.<span style="color:#a6e22e">withPrimitives</span>(START_NUM, END_NUM));
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Benchmark</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sumWithAutoBoxing</span>(Blackhole bh) {
-</span></span><span style="display:flex;"><span>        bh.<span style="color:#a6e22e">consume</span>(Sum.<span style="color:#a6e22e">withAutoBoxing</span>(START_NUM, END_NUM));
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>By default, the JMH will run a throughput test, which tests how many times we can complete the function. Our hypothesis is that the AutoBoxing will have a lower throughput compared to the primitive function.</p>
-<p><code>bh.consume</code> is a function that uses the result from our function to prevent the compiler from removing our code. This happens when the compiler sees that values are not being used, and we would essentially be measuring nothing.</p>
-</li>
-</ol>
-<h2 id="run">Run<a hidden class="anchor" aria-hidden="true" href="#run">#</a></h2>
-<p>Let&rsquo;s run the benchmark with <code>./gradlew jmh</code>. Note, if you run above, it will take a fairly long time because of JMH&rsquo;s default settings. You can see the defaults in the terminal after you run JMH:</p>
-<pre tabindex="0"><code># Warmup: 5 iterations, 10 s each
+</code></pre><p>Run <code>./gradlew build</code> to download the plugin.</p></li><li><p>Create folders <code>src/jmh/java</code></p><p>This is the default location where the tool expects to find your benchmarks. Put your benchmarks here.</p></li><li><p>Write the function that you want to test</p><p>I was curious on the effect of autoboxing on performance, and hence I wrote these two functions to try and capture that.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Sum</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>withPrimitives</span>(<span style=color:#66d9ef>int</span> start, <span style=color:#66d9ef>int</span> end) {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> result <span style=color:#f92672>=</span> 0;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> start; i <span style=color:#f92672>&lt;=</span> end; i<span style=color:#f92672>++</span>) {
+</span></span><span style=display:flex><span>            result <span style=color:#f92672>+=</span> i;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> result;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> Integer <span style=color:#a6e22e>withAutoBoxing</span>(<span style=color:#66d9ef>int</span> start, <span style=color:#66d9ef>int</span> end) {
+</span></span><span style=display:flex><span>        Integer result <span style=color:#f92672>=</span> 0;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> start; i <span style=color:#f92672>&lt;=</span> end; i<span style=color:#f92672>++</span>) {
+</span></span><span style=display:flex><span>            result <span style=color:#f92672>+=</span> i;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> result;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></li><li><p>Write your benchmark</p><p>Create a <code>SumBenchmark.java</code> in <code>/src/jmh/org/example/</code>.
+The benchmark below sets up the range of numbers that we are summing up, and defining the two functions to test.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SumBenchmark</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span> START_NUM <span style=color:#f92672>=</span> 1;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span> END_NUM <span style=color:#f92672>=</span> 10_000;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Benchmark</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sumWithPrimitive</span>(Blackhole bh) {
+</span></span><span style=display:flex><span>        bh.<span style=color:#a6e22e>consume</span>(Sum.<span style=color:#a6e22e>withPrimitives</span>(START_NUM, END_NUM));
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Benchmark</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sumWithAutoBoxing</span>(Blackhole bh) {
+</span></span><span style=display:flex><span>        bh.<span style=color:#a6e22e>consume</span>(Sum.<span style=color:#a6e22e>withAutoBoxing</span>(START_NUM, END_NUM));
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>By default, the JMH will run a throughput test, which tests how many times we can complete the function. Our hypothesis is that the AutoBoxing will have a lower throughput compared to the primitive function.</p><p><code>bh.consume</code> is a function that uses the result from our function to prevent the compiler from removing our code. This happens when the compiler sees that values are not being used, and we would essentially be measuring nothing.</p></li></ol><h2 id=run>Run<a hidden class=anchor aria-hidden=true href=#run>#</a></h2><p>Let&rsquo;s run the benchmark with <code>./gradlew jmh</code>. Note, if you run above, it will take a fairly long time because of JMH&rsquo;s default settings. You can see the defaults in the terminal after you run JMH:</p><pre tabindex=0><code># Warmup: 5 iterations, 10 s each
 # Measurement: 5 iterations, 10 s each
 # Timeout: 10 min per iteration
 # Threads: 1 thread, will synchronize iterations
 # Benchmark mode: Throughput, ops/time
 # Benchmark: org.example.SumBenchmark.sumWithAutoBoxing
-</code></pre><p>If you are impatient and would like to just see a sample result, feel free to modify the configs. You could for example reduce the measurement and warmup time as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Measurement</span>(iterations <span style="color:#f92672">=</span> 5, time <span style="color:#f92672">=</span> 1)
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Warmup</span>(iterations <span style="color:#f92672">=</span> 5, time <span style="color:#f92672">=</span> 1)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SumBenchmark</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// the rest of the code.</span>
-</span></span></code></pre></div><h2 id="results">Results<a hidden class="anchor" aria-hidden="true" href="#results">#</a></h2>
-<p>We can see from results below that summing using a primitive allows us to process ~3.5x times more than with autoboxing.</p>
-<pre tabindex="0"><code>Benchmark                        Mode  Cnt       Score      Error  Units
+</code></pre><p>If you are impatient and would like to just see a sample result, feel free to modify the configs. You could for example reduce the measurement and warmup time as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#a6e22e>@Measurement</span>(iterations <span style=color:#f92672>=</span> 5, time <span style=color:#f92672>=</span> 1)
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@Warmup</span>(iterations <span style=color:#f92672>=</span> 5, time <span style=color:#f92672>=</span> 1)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SumBenchmark</span> {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// the rest of the code.</span>
+</span></span></code></pre></div><h2 id=results>Results<a hidden class=anchor aria-hidden=true href=#results>#</a></h2><p>We can see from results below that summing using a primitive allows us to process ~3.5x times more than with autoboxing.</p><pre tabindex=0><code>Benchmark                        Mode  Cnt       Score      Error  Units
 SumBenchmark.sumWithAutoBoxing  thrpt   25   81416.429 ± 2077.866  ops/s
 SumBenchmark.sumWithPrimitive   thrpt   25  297518.357 ± 2719.078  ops/s
-</code></pre><p>Machine used is Macbook Air M1 2020.</p>
-<p>This is expected due to the creation of <code>Integer</code> objects on the heap is an additional operation. On top of that, as heap objects continue to accumulate, the garbage collector might run to move objects from the Eden space.</p>
-<p>And there you go, not too hard to measure! Well, just to start anyway. There are so many things that would affect our measurements (and what we are actually measuring) such as:</p>
-<ul>
-<li>Dead Code Elimination</li>
-<li>Constant Folding</li>
-<li>Cache locality</li>
-</ul>
-<p>We also need to explore other modes such as <code>SampleTime</code> which would give us tail latencies such as p99.</p>
-<p>As a summary, we managed to setup JMH and run a simple benchmark.</p>
-<h2 id="funny-things">Funny things<a hidden class="anchor" aria-hidden="true" href="#funny-things">#</a></h2>
-<p>I added a test where I did not use a black hole:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Benchmark</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sumWithPrimitiveNoBh</span>(Blackhole bh) {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> result <span style="color:#f92672">=</span> Sum.<span style="color:#a6e22e">withPrimitives</span>(START_NUM, END_NUM);
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><pre tabindex="0"><code>SumBenchmark.sumWithPrimitive      thrpt 25      297820.138 ±      4679.348  ops/s
+</code></pre><p>Machine used is Macbook Air M1 2020.</p><p>This is expected due to the creation of <code>Integer</code> objects on the heap is an additional operation. On top of that, as heap objects continue to accumulate, the garbage collector might run to move objects from the Eden space.</p><p>And there you go, not too hard to measure! Well, just to start anyway. There are so many things that would affect our measurements (and what we are actually measuring) such as:</p><ul><li>Dead Code Elimination</li><li>Constant Folding</li><li>Cache locality</li></ul><p>We also need to explore other modes such as <code>SampleTime</code> which would give us tail latencies such as p99.</p><p>As a summary, we managed to setup JMH and run a simple benchmark.</p><h2 id=funny-things>Funny things<a hidden class=anchor aria-hidden=true href=#funny-things>#</a></h2><p>I added a test where I did not use a black hole:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#a6e22e>@Benchmark</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sumWithPrimitiveNoBh</span>(Blackhole bh) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> result <span style=color:#f92672>=</span> Sum.<span style=color:#a6e22e>withPrimitives</span>(START_NUM, END_NUM);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><pre tabindex=0><code>SumBenchmark.sumWithPrimitive      thrpt 25      297820.138 ±      4679.348  ops/s
 SumBenchmark.sumWithPrimitiveNoBh  thrpt 25  1693983257.141 ± 107050001.440  ops/s
-</code></pre><p><code>sumWithPrimitiveNoBh</code> seems to be working <em>amazingly</em> well. Theory says that we&rsquo;re measuring nothing, but I&rsquo;ll need to grab a disassembler to really make sure. That&rsquo;s for another time :)</p>
-
-
-  </div>
-
-  <footer class="post-footer">
-    <ul class="post-tags">
-    </ul>
-  </footer>
-</article>
-    </main>
-    
-<footer class="footer">
-        <span>&copy; 2026 <a href="http://localhost:1313/">marius&#39; dev log</a></span> · 
-
-    <span>
-        Powered by
-        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
-</footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-        <path d="M12 6H0l6-6z" />
-    </svg>
-</a>
-
-<script>
-    let menu = document.getElementById('menu');
-    if (menu) {
-        
-        const scrollPosition = localStorage.getItem("menu-scroll-position");
-        if (scrollPosition) {
-            menu.scrollLeft = parseInt(scrollPosition, 10);
-        }
-        
-        menu.onscroll = function () {
-            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
-        }
-    }
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
-            }
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-
-</script>
-<script>
-    var mybutton = document.getElementById("top-link");
-    window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
-        } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
-        }
-    };
-
-</script>
-<script>
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        const html = document.querySelector("html");
-        if (html.dataset.theme === "dark") {
-            html.dataset.theme = 'light';
-            localStorage.setItem("pref-theme", 'light');
-        } else {
-            html.dataset.theme = 'dark';
-            localStorage.setItem("pref-theme", 'dark');
-        }
-    })
-
-</script>
-</body>
-
-</html>
+</code></pre><p><code>sumWithPrimitiveNoBh</code> seems to be working <em>amazingly</em> well. Theory says that we&rsquo;re measuring nothing, but I&rsquo;ll need to grab a disassembler to really make sure. That&rsquo;s for another time :)</p></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2026 <a href=https://mariusandrian.github.io/>marius' dev log</a></span> ·
+<span>Powered by
+<a href="https://gohugo.io/?utm_source=papermod" rel=noopener target=_blank>Hugo</a> &
+<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top id=top-link class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey=g><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var toplink=document.getElementById("top-link");window.onscroll=function(){const e=window.innerHeight;document.body.scrollTop>e||document.documentElement.scrollTop>e?toplink.classList.remove("hidden"):toplink.classList.add("hidden")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script></body></html>

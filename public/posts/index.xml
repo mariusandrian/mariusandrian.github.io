@@ -1,27 +1,5 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title>Posts on marius&#39; dev log</title>
-    <link>http://localhost:1313/posts/</link>
-    <description>Recent content in Posts on marius&#39; dev log</description>
-    <generator>Hugo -- 0.154.3</generator>
-    <language>en-us</language>
-    <lastBuildDate>Tue, 21 Jul 2026 13:57:39 +1000</lastBuildDate>
-    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>How to benchmark with Java Microbenchmark Harness (JMH)</title>
-      <link>http://localhost:1313/posts/bench/</link>
-      <pubDate>Tue, 21 Jul 2026 13:57:39 +1000</pubDate>
-      <guid>http://localhost:1313/posts/bench/</guid>
-      <description>&lt;p&gt;I have been binging performance-related content lately, and the phrase &amp;ldquo;measure first&amp;rdquo; comes out a lot. A fond memory of mine of &amp;ldquo;measuring&amp;rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, I am currently trying to write a Single Producer Single Consumer queue that works in the nanosecond range, and hence I started reading about micro-benchmarking, which is what we will go through.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>LFU Cache</title>
-      <link>http://localhost:1313/posts/lfu/</link>
-      <pubDate>Tue, 20 Jan 2026 13:15:58 +1100</pubDate>
-      <guid>http://localhost:1313/posts/lfu/</guid>
-      <description>&lt;p&gt;Adjacent to LRU, LFU caches behave slightly differently and was intrigued to see how I can try to make my own.&lt;/p&gt;
-&lt;h3 id=&#34;design-choices&#34;&gt;Design choices&lt;/h3&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on marius' dev log</title><link>https://mariusandrian.github.io/posts/</link><description>Recent content in Posts on marius' dev log</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Tue, 21 Jul 2026 13:57:39 +1000</lastBuildDate><atom:link href="https://mariusandrian.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>How to benchmark with Java Microbenchmark Harness (JMH)</title><link>https://mariusandrian.github.io/posts/bench/</link><pubDate>Tue, 21 Jul 2026 13:57:39 +1000</pubDate><guid>https://mariusandrian.github.io/posts/bench/</guid><description>&lt;p&gt;I have been binging performance-related content lately, and the phrase &amp;ldquo;measure first&amp;rdquo; comes out a lot. A fond memory of mine of &amp;ldquo;measuring&amp;rdquo; is taking a video of an iPhone timer next to our app to prove that the new build is many seconds slower than the previous one. Good old days as a manual QA tester. Now, as I am trying to write a Single Producer Single Consumer queue that works in the nanosecond range, I started reading about micro-benchmarking, which is what we will setup.&lt;/p&gt;</description></item><item><title>LFU Cache</title><link>https://mariusandrian.github.io/posts/lfu/</link><pubDate>Tue, 20 Jan 2026 13:15:58 +1100</pubDate><guid>https://mariusandrian.github.io/posts/lfu/</guid><description>&lt;p&gt;Adjacent to LRU, LFU caches behave slightly differently and was intrigued to see how I can try to make my own.&lt;/p&gt;
+&lt;h3 id="design-choices"&gt;Design choices&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Interface-wise, the Least Frequently Used (LFU) cache is similar to Least Recently Used (LRU).&lt;/p&gt;
@@ -40,15 +18,8 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The difference with LRU is the eviction policy. This time, the entry that is the least frequently accessed/updated is evicted in constant time. If there are multiple entries with the same frequency, use LRU rules to evict.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>LRU Cache</title>
-      <link>http://localhost:1313/posts/lru/</link>
-      <pubDate>Sat, 10 Jan 2026 14:04:34 +1100</pubDate>
-      <guid>http://localhost:1313/posts/lru/</guid>
-      <description>&lt;p&gt;While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.&lt;/p&gt;
-&lt;h2 id=&#34;design&#34;&gt;Design&lt;/h2&gt;
+&lt;p&gt;The difference with LRU is the eviction policy. This time, the entry that is the least frequently accessed/updated is evicted in constant time. If there are multiple entries with the same frequency, use LRU rules to evict.&lt;/p&gt;</description></item><item><title>LRU Cache</title><link>https://mariusandrian.github.io/posts/lru/</link><pubDate>Sat, 10 Jan 2026 14:04:34 +1100</pubDate><guid>https://mariusandrian.github.io/posts/lru/</guid><description>&lt;p&gt;While studying data structures, I came across the LRU Cache and wanted to make my own implementation. It is a key-value store that performs in a way so that the most recently accessed items remain in the cache. Here, I noted some of my design decisions and considerations.&lt;/p&gt;
+&lt;h2 id="design"&gt;Design&lt;/h2&gt;
 &lt;p&gt;We first create the underlying data structures for the LRU cache.
 The requirements for the cache:&lt;/p&gt;
 &lt;ul&gt;
@@ -57,14 +28,4 @@ The requirements for the cache:&lt;/p&gt;
 &lt;li&gt;Memory should have a fixed size.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Since we are going to use key to associate to a value, we opted to use std::unordered_map to ensure an average of O(1) lookup.
-The key could be of any hashable type, and the value is the iterator to the std::list.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Hello! 👋</title>
-      <link>http://localhost:1313/posts/hello/</link>
-      <pubDate>Sat, 10 Jan 2026 10:39:03 +1100</pubDate>
-      <guid>http://localhost:1313/posts/hello/</guid>
-      <description>&lt;p&gt;Welcome! This blog is to journal my journey of delving deeper into C++. I&amp;rsquo;m still learning how to write technical blogs, so I&amp;rsquo;m hoping it gets better over time. Have a good day :)&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+The key could be of any hashable type, and the value is the iterator to the std::list.&lt;/p&gt;</description></item><item><title>Hello! 👋</title><link>https://mariusandrian.github.io/posts/hello/</link><pubDate>Sat, 10 Jan 2026 10:39:03 +1100</pubDate><guid>https://mariusandrian.github.io/posts/hello/</guid><description>&lt;p&gt;Welcome! This blog is to journal my journey of delving deeper into C++. I&amp;rsquo;m still learning how to write technical blogs, so I&amp;rsquo;m hoping it gets better over time. Have a good day :)&lt;/p&gt;</description></item></channel></rss>
